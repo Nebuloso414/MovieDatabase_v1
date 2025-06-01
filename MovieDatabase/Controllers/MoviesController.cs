@@ -125,27 +125,7 @@ namespace MovieDatabase.Controllers
                     return BadRequest(_response);
                 }
 
-                var movie = _mapper.Map<Movie>(createMovieDto);
-
-                if (createMovieDto.Genres != null && createMovieDto.Genres.Any()) 
-                {
-                    var allGenres = await _genreContext.GetAllAsync();
-                    var genreList = new List<Genre>();
-
-                    foreach (var genre in createMovieDto.Genres)
-                    {
-                        var existingGenre = allGenres.FirstOrDefault(g => g.Name.Equals(genre, StringComparison.OrdinalIgnoreCase));
-
-                        if (existingGenre != null)
-                        {
-                            genreList.Add(existingGenre);
-                        }
-                    }
-
-                    movie.Genres = genreList;
-                }
-
-                await _movieContext.CreateAsync(movie);
+                var movie = await _movieService.CreateAsync(createMovieDto);
 
                 _response.Result = _mapper.Map<MovieDto>(movie);
                 _response.StatusCode = HttpStatusCode.Created;
