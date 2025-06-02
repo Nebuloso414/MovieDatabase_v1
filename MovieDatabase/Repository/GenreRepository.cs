@@ -18,7 +18,6 @@ namespace MovieDatabase.Repository
 
             return await _dbSet
                 .Where(g => normalizedNames.Contains(g.Name.ToLower()))
-                //.Where(g => g.Name.ToLower().Equals(normalizedNames))
                 .ToListAsync();
         }
     }
