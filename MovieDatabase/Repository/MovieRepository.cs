@@ -19,5 +19,10 @@ namespace MovieDatabase.Repository
             return await _dbSet.Include(m => m.Genres)
                                .FirstOrDefaultAsync(m => m.Id == id);
         }
+
+        public async Task<Movie?> GetByTitle(string title)
+        {
+            return await _dbSet.FirstOrDefaultAsync(m => m.Title.ToLower() == title.ToLower());
+        }
     }
 }

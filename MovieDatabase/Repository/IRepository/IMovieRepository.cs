@@ -8,5 +8,6 @@ namespace MovieDatabase.Repository.IRepository
         // Add Movie-specific methods here if needed
         Task<IEnumerable<Movie>> GetAllWithGenresAsync();
         Task<Movie?> GetByIdWithGenresAsync(int id);
+        Task<Movie?> GetByTitle(string title);
     }
 }

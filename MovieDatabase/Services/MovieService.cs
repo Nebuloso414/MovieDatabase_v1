@@ -70,6 +70,11 @@ namespace MovieDatabase.Services
                 throw new BadHttpRequestException($"Movie with ID {updatedMovie.Id} not found.");
             }
 
+            if (await _movieRepository.GetByTitle(updatedMovie.Title) != null)
+            {
+                throw new BadHttpRequestException($"A movie with the title '{updatedMovie.Title}' already exists.");
+            }
+
             _mapper.Map(updatedMovie, existingMovie);
 
             if (updatedMovie.Genres != null)
