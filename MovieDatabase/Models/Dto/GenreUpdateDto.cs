@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MovieDatabase.Models.Dto
+namespace MovieDatabase.Models
 {
     public class GenreUpdateDto
     {

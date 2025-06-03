@@ -1,27 +1,26 @@
+using System.Net;
 using AutoMapper;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using MovieDatabase.Models;
 using MovieDatabase.Models.Dto;
-using MovieDatabase.Repository.IRepository;
+using MovieDatabase.Services;
 using Swashbuckle.AspNetCore.Filters;
-using System.Net;
 
 namespace MovieDatabase.Controllers
 {
     [ApiController]
-    [Route("api/GenreAPI")]
+    [Route("api/genre")]
     [Consumes("application/json")]
     [Produces("application/json")]
     public class GenresController : ControllerBase
     {
         protected APIResponse _response;
-        private readonly IGenreRepository _genreDb;
+        private readonly IGenreService _genreService;
         private readonly IMapper _mapper;
 
-        public GenresController(IGenreRepository genreDb, IMapper mapper)
+        public GenresController(IGenreService genreService, IMapper mapper)
         {
-            _genreDb = genreDb;
+            _genreService = genreService;
             _mapper = mapper;
             _response = new();
         }
@@ -35,7 +34,7 @@ namespace MovieDatabase.Controllers
         {
             try
             {
-                var genres = await _genreDb.GetAllAsync();
+                var genres = await _genreService.GetAllAsync();
                 _response.Result = _mapper.Map<List<GenreDto>>(genres);
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
@@ -70,7 +69,7 @@ namespace MovieDatabase.Controllers
                     return BadRequest(_response);
                 }
 
-                var genre = await _genreDb.GetByIdAsync(x => x.Id == id, tracked: false);
+                var genre = await _genreService.GetByIdAsync(x => x.Id == id, tracked: false);
 
                 if (genre == null)
                 {
@@ -104,7 +103,7 @@ namespace MovieDatabase.Controllers
         {
             try
             {
-                if (await _genreDb.GetByIdAsync(x => x.Name == createGenreDto.Name) != null)
+                if (await _genreService.GetByIdAsync(x => x.Name == createGenreDto.Name) != null)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -121,7 +120,7 @@ namespace MovieDatabase.Controllers
                 }
 
                 var genre = _mapper.Map<Genre>(createGenreDto);
-                await _genreDb.CreateAsync(genre);
+                await _genreService.CreateAsync(genre);
 
                 _response.Result = _mapper.Map<GenreDto>(genre);
                 _response.StatusCode = HttpStatusCode.Created;
@@ -158,7 +157,7 @@ namespace MovieDatabase.Controllers
                     return BadRequest(_response);
                 }
 
-                var genre = await _genreDb.GetByIdAsync(x => x.Id == id);
+                var genre = await _genreService.GetByIdAsync(x => x.Id == id);
 
                 if (genre == null)
                 {
@@ -168,7 +167,7 @@ namespace MovieDatabase.Controllers
                     return NotFound(_response);
                 }
 
-                await _genreDb.RemoveAsync(genre);
+                await _genreService.DeleteAsync(genre);
 
                 _response.StatusCode = HttpStatusCode.NoContent;
                 _response.IsSuccess = true;
@@ -203,80 +202,13 @@ namespace MovieDatabase.Controllers
                     return BadRequest(_response);
                 }
 
-                Genre genre = _mapper.Map<Genre>(updatedGenre);
+                var genre = _mapper.Map<Genre>(updatedGenre);
 
-                await _genreDb.UpdateAsync(genre);
+                await _genreService.UpdateAsync(genre);
 
                 _response.Result = _mapper.Map<GenreDto>(genre);
                 _response.StatusCode = HttpStatusCode.OK;
                 _response.IsSuccess = true;
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.StatusCode = HttpStatusCode.InternalServerError;
-                _response.Errors.Add(ex.Message);
-                return StatusCode((int)_response.StatusCode, _response);
-            }
-        }
-
-        [HttpPatch("{id:int}", Name = "UpdatePartialGenre")]
-        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status500InternalServerError)]
-        [SwaggerResponseExample(StatusCodes.Status200OK, typeof(APIResponseOkExample))]
-        [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(APIResponseBadRequestExample))]
-        [SwaggerResponseExample(StatusCodes.Status404NotFound, typeof(APIResponseNotFoundExample))]
-        [SwaggerResponseExample(StatusCodes.Status500InternalServerError, typeof(APIResponseInternalServerErrorExample))]
-        [Consumes("application/json-patch+json")]
-        public async Task<ActionResult<APIResponse>> UpdatePartialGenre(int id, [FromBody] JsonPatchDocument<GenreUpdateDto> patchDto)
-        {
-            try
-            {
-                if (id <= 0 || patchDto == null)
-                {
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.Errors.Add("Invalid patch document or Id provided.");
-                    return BadRequest(_response);
-                }
-                var genre = await _genreDb.GetByIdAsync(x => x.Id == id, tracked: false);
-
-                if (genre == null)
-                {
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.Errors.Add($"Genre with ID {id} not found.");
-                    return NotFound(_response);
-                }
-
-                var genreUpdateDto = _mapper.Map<GenreUpdateDto>(genre);
-                patchDto.ApplyTo(genreUpdateDto, (error) =>
-                {
-                    if (error.AffectedObject != null)
-                    {
-                        ModelState.AddModelError(error.AffectedObject.ToString() ?? string.Empty, error.ErrorMessage);
-                    }
-                });
-
-                if (!ModelState.IsValid)
-                {
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.Errors.AddRange(ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                    _response.Result = ModelState;
-                    return BadRequest(_response);
-                }
-
-                genre = _mapper.Map<Genre>(genreUpdateDto);
-
-                await _genreDb.UpdateAsync(genre);
-
-                _response.Result = _mapper.Map<GenreDto>(genre);
-                _response.StatusCode = HttpStatusCode.OK;
-
                 return Ok(_response);
             }
             catch (Exception ex)
