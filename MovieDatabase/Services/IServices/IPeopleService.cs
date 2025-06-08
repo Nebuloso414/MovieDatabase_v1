@@ -2,7 +2,7 @@
 using MovieDatabase.Models.Dto;
 using System.Linq.Expressions;
 
-namespace MovieDatabase.Services.IServices
+namespace MovieDatabase.Services
 {
     public interface IPeopleService
     {

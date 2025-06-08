@@ -2,7 +2,6 @@
 using MovieDatabase.Models;
 using MovieDatabase.Models.Dto;
 using MovieDatabase.Repository.IRepository;
-using MovieDatabase.Services.IServices;
 using System.Linq.Expressions;
 
 namespace MovieDatabase.Services
