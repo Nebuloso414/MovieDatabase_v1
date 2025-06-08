@@ -20,7 +20,7 @@ namespace MovieDatabase.Repository
                                .FirstOrDefaultAsync(m => m.Id == id);
         }
 
-        public async Task<Movie?> GetByTitle(string title)
+        public async Task<Movie?> GetByTitleAsync(string title)
         {
             return await _dbSet.FirstOrDefaultAsync(m => m.Title.ToLower() == title.ToLower());
         }
