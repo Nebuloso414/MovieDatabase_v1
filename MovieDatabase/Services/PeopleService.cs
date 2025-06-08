@@ -29,6 +29,11 @@ namespace MovieDatabase.Services
 
         public async Task<IEnumerable<People?>> GetByNameAsync(string name)
         {
+            if (string.IsNullOrEmpty(name))
+            {
+                return Enumerable.Empty<People>();
+            }
+
             return await _peopleRepository.GetByNameAsync(name);
         }
         public async Task<People> CreateAsync(PeopleCreateDto peopleDto)

@@ -14,9 +14,9 @@ namespace MovieDatabase.Repository
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<People?>> GetByNameAsync(string name)
+        public async Task<IEnumerable<People?>> GetByNameAsync(string name)
         {
-            throw new NotImplementedException();
+            return await GetAllAsync(p => p.FirstName.ToLower().Contains(name.ToLower()) || p.LastName.ToLower().Contains(name.ToLower()));
         }
     }
 }
