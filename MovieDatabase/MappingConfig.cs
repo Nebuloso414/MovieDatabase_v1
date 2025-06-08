@@ -23,9 +23,12 @@ namespace MovieDatabase
             CreateMap<Movie, MovieCreateDto>()
                 .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.Genres.Select(g => g.Name).ToList()));
 
-            //CreateMap<Movie, MovieUpdateDto>();
             CreateMap<MovieUpdateDto, Movie>()
                 .ForMember(dest => dest.Genres, opt => opt.Ignore());
+
+            CreateMap<People, PeopleDto>().ReverseMap();
+            CreateMap<People, PeopleCreateDto>().ReverseMap();
+            CreateMap<People, PeopleUpdateDto>().ReverseMap();
         }
     }
 }
