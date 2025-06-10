@@ -50,7 +50,7 @@ namespace MovieDatabase.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<APIResponse>> GetPeopleById(int id)
+        public async Task<ActionResult<APIResponse>> GetPersonById(int id)
         {
             try
             {
@@ -66,6 +66,34 @@ namespace MovieDatabase.Controllers
                 _response.Result = _mapper.Map<PeopleDto>(person);
                 _response.StatusCode = System.Net.HttpStatusCode.OK;
                 return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Errors = new List<string> { ex.Message };
+                _response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                return StatusCode((int)_response.StatusCode, _response);
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<APIResponse>> CreatePerson([FromBody] PeopleCreateDto peopleDto)
+        {
+            try
+            {
+                if (peopleDto == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                    _response.Errors = new List<string> { "Invalid data" };
+                    return BadRequest(_response);
+                }
+
+                var person = await _peopleService.CreateAsync(peopleDto);
+
+                _response.Result = _mapper.Map<PeopleDto>(person);
+                _response.StatusCode = System.Net.HttpStatusCode.Created;
+                return CreatedAtAction(nameof(GetPersonById), new { id = person.Id }, _response);
             }
             catch (Exception ex)
             {
