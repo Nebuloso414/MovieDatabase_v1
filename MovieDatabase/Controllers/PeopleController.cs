@@ -103,5 +103,34 @@ namespace MovieDatabase.Controllers
                 return StatusCode((int)_response.StatusCode, _response);
             }
         }
+
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult<APIResponse>> DeletePerson(int id)
+        {
+            try
+            {
+                var person = await _peopleService.GetByIdAsync(p => p.Id == id, false);
+
+                if (person == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = System.Net.HttpStatusCode.NotFound;
+                    _response.Errors = new List<string> { "Person not found" };
+                    return NotFound(_response);
+                }
+
+                await _peopleService.DeleteAsync(person);
+                _response.StatusCode = System.Net.HttpStatusCode.NoContent;
+
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Errors = new List<string> { ex.Message };
+                _response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                return StatusCode((int)_response.StatusCode, _response);
+            }
+        }
     }
 }
