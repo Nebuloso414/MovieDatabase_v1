@@ -48,5 +48,32 @@ namespace MovieDatabase.Controllers
             }
             return Ok(_response);
         }
+
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<APIResponse>> GetPeopleById(int id)
+        {
+            try
+            {
+                var person = await _peopleService.GetByIdAsync(p => p.Id == id, false);
+                if (person == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = System.Net.HttpStatusCode.NotFound;
+                    _response.Errors = new List<string> { "Person not found" };
+                    return NotFound(_response);
+                }
+
+                _response.Result = _mapper.Map<PeopleDto>(person);
+                _response.StatusCode = System.Net.HttpStatusCode.OK;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Errors = new List<string> { ex.Message };
+                _response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                return StatusCode((int)_response.StatusCode, _response);
+            }
+        }
     }
 }
