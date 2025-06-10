@@ -35,6 +35,71 @@ namespace MovieDatabase.EntityConfigurations
 
             modelBuilder.Property(mc => mc.UpdatedDate)
                 .HasDefaultValueSql("GETDATE()");
+
+            // Initial table seed
+            modelBuilder.HasData(new MovieCast[]
+            {
+                new MovieCast
+                {
+                    MovieId = 1,
+                    PersonId = 1,
+                    RoleId = 1
+                },
+                new MovieCast
+                {
+                    MovieId = 1,
+                    PersonId = 2,
+                    RoleId = 1
+                },
+                new MovieCast
+                {
+                    MovieId = 1,
+                    PersonId = 13,
+                    RoleId = 2
+                },
+                new MovieCast
+                {
+                    MovieId = 2,
+                    PersonId = 5,
+                    RoleId = 1
+                },
+                new MovieCast
+                {
+                    MovieId = 2,
+                    PersonId = 6,
+                    RoleId = 1
+                },
+                new MovieCast
+                {
+                    MovieId = 2,
+                    PersonId = 11,
+                    RoleId = 2
+                },
+                new MovieCast
+                {
+                    MovieId = 2,
+                    PersonId = 12,
+                    RoleId = 2
+                },
+                new MovieCast
+                {
+                    MovieId = 3,
+                    PersonId = 8,
+                    RoleId = 1
+                },
+                new MovieCast
+                {
+                    MovieId = 3,
+                    PersonId = 9,
+                    RoleId = 1
+                },
+                new MovieCast
+                {
+                    MovieId = 3,
+                    PersonId = 10,
+                    RoleId = 2
+                },
+            });
         }
     }
 }
