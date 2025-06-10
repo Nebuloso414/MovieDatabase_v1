@@ -50,9 +50,17 @@ namespace MovieDatabase.Services
 
         public async Task<People> UpdateAsync(PeopleUpdateDto updatedPeople)
         {
-            var people = _mapper.Map<People>(updatedPeople);
-            await _peopleRepository.UpdateAsync(people);
-            return people;
+            var existingPerson = await _peopleRepository.GetByIdAsync(p => p.Id == updatedPeople.Id, true);
+
+            if (existingPerson == null)
+            {
+                throw new BadHttpRequestException($"Person with ID {updatedPeople.Id} not found.");
+            }
+
+            _mapper.Map(updatedPeople, existingPerson);
+
+            await _peopleRepository.UpdateAsync(existingPerson);
+            return existingPerson;
         }
     }
 }

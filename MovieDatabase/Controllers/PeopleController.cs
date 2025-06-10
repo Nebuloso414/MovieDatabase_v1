@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MovieDatabase.Models;
 using MovieDatabase.Models.Dto;
 using MovieDatabase.Services;
+using System.Net;
 
 namespace MovieDatabase.Controllers
 {
@@ -123,6 +124,41 @@ namespace MovieDatabase.Controllers
                 _response.StatusCode = System.Net.HttpStatusCode.NoContent;
 
                 return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Errors = new List<string> { ex.Message };
+                _response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                return StatusCode((int)_response.StatusCode, _response);
+            }
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<APIResponse>> UpdatePerson(int id, [FromBody] PeopleUpdateDto updatedPeople)
+        {
+            try
+            {
+                if (updatedPeople == null || updatedPeople.Id != id)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                    _response.Errors = new List<string> { "Invalid data" };
+                    return BadRequest(_response);
+                }
+
+                var updatedPerson = await _peopleService.UpdateAsync(updatedPeople);
+
+                _response.Result = _mapper.Map<PeopleDto>(updatedPerson);
+                _response.StatusCode = System.Net.HttpStatusCode.OK;
+                return Ok(_response);
+            }
+            catch (BadHttpRequestException ex)
+            {
+                _response.IsSuccess = false;
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.Errors.Add(ex.Message);
+                return BadRequest(_response);
             }
             catch (Exception ex)
             {
