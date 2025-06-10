@@ -14,5 +14,6 @@ namespace MovieDatabase.Models
 
         // Many-to-many: a movie can have multiple genres
         public List<Genre> Genres { get; set; } = new();
+        public List<MovieCast> Cast { get; set; } = new();
     }
 }

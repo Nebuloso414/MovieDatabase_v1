@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MovieDatabase.Data;
 
@@ -11,9 +12,11 @@ using MovieDatabase.Data;
 namespace MovieDatabase.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250610024933_AddRoleTable")]
+    partial class AddRoleTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -186,36 +189,6 @@ namespace MovieDatabase.Migrations
                             Title = "The Shawshank Redemption",
                             UpdatedDate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         });
-                });
-
-            modelBuilder.Entity("MovieDatabase.Models.MovieCast", b =>
-                {
-                    b.Property<int>("MovieId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PersonId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.HasKey("MovieId", "PersonId", "RoleId");
-
-                    b.HasIndex("PersonId");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("MovieCasts", (string)null);
                 });
 
             modelBuilder.Entity("MovieDatabase.Models.People", b =>
@@ -481,33 +454,6 @@ namespace MovieDatabase.Migrations
                         });
                 });
 
-            modelBuilder.Entity("MovieDatabase.Models.MovieCast", b =>
-                {
-                    b.HasOne("MovieDatabase.Models.Movie", "Movie")
-                        .WithMany("Cast")
-                        .HasForeignKey("MovieId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("MovieDatabase.Models.People", "Person")
-                        .WithMany("Filmography")
-                        .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("MovieDatabase.Models.Role", "Role")
-                        .WithMany("Credits")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Movie");
-
-                    b.Navigation("Person");
-
-                    b.Navigation("Role");
-                });
-
             modelBuilder.Entity("MovieGenre", b =>
                 {
                     b.HasOne("MovieDatabase.Models.Genre", null)
@@ -521,21 +467,6 @@ namespace MovieDatabase.Migrations
                         .HasForeignKey("MoviesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("MovieDatabase.Models.Movie", b =>
-                {
-                    b.Navigation("Cast");
-                });
-
-            modelBuilder.Entity("MovieDatabase.Models.People", b =>
-                {
-                    b.Navigation("Filmography");
-                });
-
-            modelBuilder.Entity("MovieDatabase.Models.Role", b =>
-                {
-                    b.Navigation("Credits");
                 });
 #pragma warning restore 612, 618
         }

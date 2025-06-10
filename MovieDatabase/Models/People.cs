@@ -10,6 +10,6 @@
         public DateTime UpdatedDate { get; set; }
         public string Name => $"{FirstName} {LastName}";
         public int Age => DateOfBirth.HasValue ? DateTime.Now.Year - DateOfBirth.Value.Year : 0;
-        
+        public List<MovieCast> Filmography { get; set; } = new();
     }
 }
