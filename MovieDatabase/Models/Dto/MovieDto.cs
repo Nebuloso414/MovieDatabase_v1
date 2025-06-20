@@ -9,5 +9,6 @@
         public int? Length { get; set; }
         public decimal Rating { get; set; }
         public List<string> Genres { get; set; } = new();
+        public List<MovieCastDto> Cast { get; set; } = new();
     }
 }

@@ -31,7 +31,7 @@ namespace MovieDatabase.Repository
                 {
                     query = query.Include(includeProperty);
                 }
-            }
+            } 
 
             return await query.ToListAsync();
         }

@@ -30,13 +30,17 @@ namespace MovieDatabase.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status500InternalServerError)]
-        [SwaggerResponseExample(StatusCodes.Status200OK, typeof(APIResponseOkExample))]
-        [SwaggerResponseExample(StatusCodes.Status500InternalServerError, typeof(APIResponseInternalServerErrorExample))]
-        public async Task<ActionResult<APIResponse>> GetMovies()
+        public async Task<ActionResult<APIResponse>> GetMovies([FromQuery] bool includeCast = false)
         {
             try
             {
-                var movies = await _movieService.GetAllAsync(filter: null, includeProperties: "Genres");
+                string includeProperties = "Genres";
+                if (includeCast)
+                {
+                    includeProperties += ",Cast,Cast.Person,Cast.Role";
+                }
+
+                var movies = await _movieService.GetAllAsync(includeProperties: includeProperties);
                 _response.Result = _mapper.Map<List<MovieDto>>(movies);
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
@@ -55,11 +59,7 @@ namespace MovieDatabase.Controllers
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status500InternalServerError)]
-        [SwaggerResponseExample(StatusCodes.Status200OK, typeof(APIResponseOkExample))]
-        [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(APIResponseBadRequestExample))]
-        [SwaggerResponseExample(StatusCodes.Status404NotFound, typeof(APIResponseNotFoundExample))]
-        [SwaggerResponseExample(StatusCodes.Status500InternalServerError, typeof(APIResponseInternalServerErrorExample))]
-        public async Task<ActionResult<APIResponse>> GetMovie(int id)
+        public async Task<ActionResult<APIResponse>> GetMovie(int id, [FromQuery] bool includeCast = false)
         {
             try
             {
@@ -71,7 +71,13 @@ namespace MovieDatabase.Controllers
                     return BadRequest(_response);
                 }
 
-                var movie = await _movieService.GetByIdAsync(x => x.Id == id, false, "Genres");
+                string includeProperties = "Genres";
+                if (includeCast)
+                {
+                    includeProperties += ",Cast,Cast.Person,Cast.Role";
+                }
+
+                var movie = await _movieService.GetByIdAsync(filter: m => m.Id == id, includeProperties: includeProperties);
 
                 if (movie == null)
                 {
