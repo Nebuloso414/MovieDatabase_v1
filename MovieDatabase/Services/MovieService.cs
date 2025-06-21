@@ -30,6 +30,11 @@ namespace MovieDatabase.Services
             return await _movieRepository.GetByIdAsync(filter, tracked, includeProperties);
         }
 
+        public async Task<IEnumerable<MovieDto>> GetMoviesOptimizedAsync(bool includeCast = false)
+        {
+            return await _movieRepository.GetMoviesWithProjectionAsync(includeCast);
+        }
+
         public async Task<Movie> CreateAsync(MovieCreateDto movieDto)
         {
             var movie = _mapper.Map<Movie>(movieDto);

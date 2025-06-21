@@ -11,5 +11,6 @@ namespace MovieDatabase.Services
         Task<Movie> CreateAsync(MovieCreateDto movieDto);
         Task DeleteAsync(Movie movie);
         Task<Movie> UpdateAsync(MovieUpdateDto updatedMovie);
+        Task<IEnumerable<MovieDto>> GetMoviesOptimizedAsync(bool includeCast = false);
     }
 }

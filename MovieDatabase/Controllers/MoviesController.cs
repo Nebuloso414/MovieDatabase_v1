@@ -34,14 +34,8 @@ namespace MovieDatabase.Controllers
         {
             try
             {
-                string includeProperties = "Genres";
-                if (includeCast)
-                {
-                    includeProperties += ",Cast,Cast.Person,Cast.Role";
-                }
-
-                var movies = await _movieService.GetAllAsync(includeProperties: includeProperties);
-                _response.Result = _mapper.Map<List<MovieDto>>(movies);
+                var movies = await _movieService.GetMoviesOptimizedAsync(includeCast);
+                _response.Result = movies; // Already MovieDto objects, no need for mapping
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
