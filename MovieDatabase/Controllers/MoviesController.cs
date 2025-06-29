@@ -34,8 +34,8 @@ namespace MovieDatabase.Controllers
         {
             try
             {
-                var movies = await _movieService.GetMoviesOptimizedAsync(includeCast);
-                _response.Result = movies; // Already MovieDto objects, no need for mapping
+                var movies = await _movieService.GetMoviesAsync(includeCast: includeCast);
+                _response.Result = movies;
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -65,15 +65,9 @@ namespace MovieDatabase.Controllers
                     return BadRequest(_response);
                 }
 
-                string includeProperties = "Genres";
-                if (includeCast)
-                {
-                    includeProperties += ",Cast,Cast.Person,Cast.Role";
-                }
+                var movie = await _movieService.GetMoviesAsync(filter: m => m.Id == id, includeCast);
 
-                var movie = await _movieService.GetByIdAsync(filter: m => m.Id == id, includeProperties: includeProperties);
-
-                if (movie == null)
+                if (movie.ToList().Count == 0)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
@@ -81,7 +75,7 @@ namespace MovieDatabase.Controllers
                     return NotFound(_response);
                 }
 
-                _response.Result = _mapper.Map<MovieDto>(movie);
+                _response.Result = movie;
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -105,7 +99,7 @@ namespace MovieDatabase.Controllers
         {
             try
             {
-                if (await _movieService.GetByIdAsync(x => x.Title == createMovieDto.Title) != null)
+                if (await _movieService.MovieExistsAsync(createMovieDto.Title))
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -165,7 +159,7 @@ namespace MovieDatabase.Controllers
                     return BadRequest(_response);
                 }
 
-                var movie = await _movieService.GetByIdAsync(x => x.Id == id);
+                var movie = await _movieService.GetMoviesAsync(x => x.Id == id);
 
                 if (movie == null)
                 {
@@ -175,7 +169,7 @@ namespace MovieDatabase.Controllers
                     return NotFound(_response);
                 }
 
-                await _movieService.DeleteAsync(movie);
+                await _movieService.DeleteAsync(_mapper.Map<Movie>(movie.SingleOrDefault()));
 
                 _response.StatusCode = HttpStatusCode.NoContent;
                 _response.IsSuccess = true;

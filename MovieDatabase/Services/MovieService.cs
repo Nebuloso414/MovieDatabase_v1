@@ -20,19 +20,9 @@ namespace MovieDatabase.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<Movie>> GetAllAsync(Expression<Func<Movie, bool>>? filter = null, string? includeProperties = null)
+        public async Task<IEnumerable<MovieDto>> GetMoviesAsync(Expression<Func<Movie, bool>>? filter = null, bool includeCast = false)
         {
-            return await _movieRepository.GetAllAsync(filter, includeProperties);
-        }
-
-        public async Task<Movie?> GetByIdAsync(Expression<Func<Movie, bool>>? filter = null, bool tracked = true, string? includeProperties = null)
-        {
-            return await _movieRepository.GetByIdAsync(filter, tracked, includeProperties);
-        }
-
-        public async Task<IEnumerable<MovieDto>> GetMoviesOptimizedAsync(bool includeCast = false)
-        {
-            return await _movieRepository.GetMoviesWithProjectionAsync(includeCast);
+            return await _movieRepository.GetMoviesAsync(filter, includeCast);
         }
 
         public async Task<Movie> CreateAsync(MovieCreateDto movieDto)
@@ -75,11 +65,6 @@ namespace MovieDatabase.Services
                 throw new BadHttpRequestException($"Movie with ID {updatedMovie.Id} not found.");
             }
 
-            if (await _movieRepository.GetByTitleAsync(updatedMovie.Title) != null)
-            {
-                throw new BadHttpRequestException($"A movie with the title '{updatedMovie.Title}' already exists.");
-            }
-
             _mapper.Map(updatedMovie, existingMovie);
 
             if (updatedMovie.Genres != null)
@@ -108,6 +93,11 @@ namespace MovieDatabase.Services
 
             await _movieRepository.UpdateAsync(existingMovie);
             return existingMovie;
+        }
+
+        public async Task<bool> MovieExistsAsync(string title)
+        {
+            return await _movieRepository.MovieExistsAsync(title);
         }
     }
 }

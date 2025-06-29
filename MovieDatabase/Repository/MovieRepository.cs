@@ -3,6 +3,7 @@ using MovieDatabase.Data;
 using MovieDatabase.Models;
 using MovieDatabase.Models.Dto;
 using MovieDatabase.Repository.IRepository;
+using System.Linq.Expressions;
 
 namespace MovieDatabase.Repository
 {
@@ -15,14 +16,16 @@ namespace MovieDatabase.Repository
             return await _dbSet.FirstOrDefaultAsync(m => m.Title.ToLower() == title.ToLower());
         }
 
-        public async Task<IEnumerable<MovieDto>> GetMoviesWithProjectionAsync(bool includeCast = false)
+        public async Task<IEnumerable<MovieDto>> GetMoviesAsync(Expression<Func<Movie, bool>>? filter = null, bool includeCast = false)
         {
-            // Start with base query
             IQueryable<Movie> query = _dbSet;
+            _dbSet.AsNoTracking();
+
+            if (filter != null)
+                query = query.Where(filter);
 
             if (includeCast)
             {
-                // Use projection to select only the needed properties
                 return await query
                     .Select(m => new MovieDto
                     {
@@ -42,7 +45,6 @@ namespace MovieDatabase.Repository
             }
             else
             {
-                // Without cast, use a simpler projection
                 return await query
                     .Select(m => new MovieDto
                     {
@@ -52,10 +54,15 @@ namespace MovieDatabase.Repository
                         Length = m.Length,
                         Rating = m.Rating,
                         Genres = m.Genres.Select(g => g.Name).ToList(),
-                        Cast = new List<MovieCastDto>() // Empty list
+                        Cast = new List<MovieCastDto>()
                     })
                     .ToListAsync();
             }
+        }
+
+        public async Task<bool> MovieExistsAsync(string title)
+        {
+            return await _dbSet.AnyAsync(m => m.Title.ToLower() == title.ToLower());
         }
     }
 }

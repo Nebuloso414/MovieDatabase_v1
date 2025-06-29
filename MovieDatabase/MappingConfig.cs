@@ -22,8 +22,11 @@ namespace MovieDatabase
                     {
                         Person = c.Person.Name,
                         Role = c.Role.Name
-                    }).ToList()))
-                .ReverseMap();
+                    }).ToList()));
+
+            CreateMap<MovieDto, Movie>()
+                .ForMember(dest => dest.Genres, opt => opt.Ignore())
+                .ForMember(dest => dest.Cast, opt => opt.Ignore());
 
             CreateMap<MovieCreateDto, Movie>()
                 .ForMember(dest => dest.Genres, opt => opt.Ignore())
