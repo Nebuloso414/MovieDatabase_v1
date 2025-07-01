@@ -1,10 +1,8 @@
 using AutoMapper;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using MovieDatabase.Models;
-using MovieDatabase.Models.Dto;
-using MovieDatabase.Repository.IRepository;
-using MovieDatabase.Services;
+using MovieDatabase.Core.Models;
+using MovieDatabase.Core.Models.Dto;
+using MovieDatabase.Core.Services;
 using Swashbuckle.AspNetCore.Filters;
 using System.Net;
 

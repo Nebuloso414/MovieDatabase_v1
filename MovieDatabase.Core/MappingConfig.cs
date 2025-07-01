@@ -2,7 +2,7 @@
 using MovieDatabase.Core.Models;
 using MovieDatabase.Core.Models.Dto;
 
-namespace MovieDatabase
+namespace MovieDatabase.Core
 {
     public class MappingConfig : Profile
     {

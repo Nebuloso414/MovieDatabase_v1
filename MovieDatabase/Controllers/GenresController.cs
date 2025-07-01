@@ -1,9 +1,9 @@
 using System.Net;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using MovieDatabase.Models;
-using MovieDatabase.Models.Dto;
-using MovieDatabase.Services;
+using MovieDatabase.Core.Models;
+using MovieDatabase.Core.Models.Dto;
+using MovieDatabase.Core.Services;
 using Swashbuckle.AspNetCore.Filters;
 
 namespace MovieDatabase.Controllers
