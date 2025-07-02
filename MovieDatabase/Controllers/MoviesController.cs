@@ -17,12 +17,14 @@ namespace MovieDatabase.Controllers
         protected APIResponse _response;
         private readonly IMapper _mapper;
         private readonly IMovieService _movieService;
+        private readonly IGenreService _genreService;
 
-        public MoviesController(IMovieService movieService, IMapper mapper)
+        public MoviesController(IMovieService movieService, IMapper mapper, IGenreService genreService)
         {
             _movieService = movieService;
             _mapper = mapper;
             _response = new();
+            _genreService = genreService;
         }
 
         [HttpGet]
@@ -113,7 +115,8 @@ namespace MovieDatabase.Controllers
                     return BadRequest(_response);
                 }
 
-                var movie = await _movieService.CreateAsync(createMovieDto);
+                var movie = _mapper.Map<Movie>(createMovieDto);
+                await _movieService.CreateAsync(movie);
 
                 _response.Result = _mapper.Map<MovieDto>(movie);
                 _response.StatusCode = HttpStatusCode.Created;
@@ -190,21 +193,36 @@ namespace MovieDatabase.Controllers
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(APIResponseOkExample))]
         [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(APIResponseBadRequestExample))]
         [SwaggerResponseExample(StatusCodes.Status500InternalServerError, typeof(APIResponseInternalServerErrorExample))]
-        public async Task<ActionResult<APIResponse>> UpdateMovie(int id, MovieUpdateDto updatedMovie)
+        public async Task<ActionResult<APIResponse>> UpdateMovie(int id, MovieUpdateDto request)
         {
             try
             { 
-                if (id <= 0 || updatedMovie == null || id != updatedMovie.Id)
+                if (id <= 0 || request == null || id != request.Id)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Errors.Add("Invalid ID or movie data provided.");
                     return BadRequest(_response);
                 }
+                // inject genre service. Create new method in genre service to retrieve the genres in the updated movie and the genres not found in the db
+                var genres = await _genreService.ProcessGenreNamesAsync(request.Genres);
 
-                var movie = await _movieService.UpdateAsync(updatedMovie);
+                if (genres.NotFoundGenres.Count > 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    _response.Errors = new List<string>
+                    {
+                        "The following genres do not exist: " + string.Join(", ", genres.NotFoundGenres)
+                    };
+                    return BadRequest(_response);
+                }
 
-                _response.Result = _mapper.Map<MovieDto>(movie);
+                var movie = _mapper.Map<Movie>(request);
+                movie.Genres = genres.FoundGenres;
+                var UpdatedMovie = await _movieService.UpdateAsync(movie);
+
+                _response.Result = _mapper.Map<MovieDto>(UpdatedMovie);
                 _response.StatusCode = HttpStatusCode.OK;
                 _response.IsSuccess = true;
                 return Ok(_response);

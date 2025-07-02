@@ -61,7 +61,7 @@ namespace MovieDatabase.Core.Repository
             return await query.FirstOrDefaultAsync();
         }
 
-        public virtual async Task CreateAsync(T entity)
+        public virtual async Task<bool> CreateAsync(T entity)
         {
             var now = DateTime.UtcNow;
             var createdDateProp = typeof(T).GetProperty("CreatedDate");
@@ -75,6 +75,7 @@ namespace MovieDatabase.Core.Repository
 
             _dbSet.Add(entity);
             await SaveAsync();
+            return true;
         }
 
         public virtual async Task UpdateAsync(T entity)

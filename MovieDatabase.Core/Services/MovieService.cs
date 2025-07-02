@@ -12,13 +12,11 @@ namespace MovieDatabase.Core.Services
     {
         private readonly IMovieRepository _movieRepository;
         private readonly IGenreRepository _genreRepository;
-        private readonly IMapper _mapper;
 
-        public MovieService(IMovieRepository movieRepository, IGenreRepository genreRepository, IMapper mapper)
+        public MovieService(IMovieRepository movieRepository, IGenreRepository genreRepository)
         {
             _movieRepository = movieRepository;
             _genreRepository = genreRepository;
-            _mapper = mapper;
         }
 
         public async Task<IEnumerable<MovieDto>> GetMoviesAsync(Expression<Func<Movie, bool>>? filter = null, bool includeCast = false)
@@ -26,17 +24,16 @@ namespace MovieDatabase.Core.Services
             return await _movieRepository.GetMoviesAsync(filter, includeCast);
         }
 
-        public async Task<Movie> CreateAsync(MovieCreateDto movieDto)
+        public async Task<bool> CreateAsync(Movie movie)
         {
-            var movie = _mapper.Map<Movie>(movieDto);
-            if (movieDto.Genres != null && movieDto.Genres.Any())
+            if (movie.Genres != null && movie.Genres.Any())
             {
-                var foundGenres = await _genreRepository.GetGenresByNamesAsync(movieDto.Genres);
+                var foundGenres = await _genreRepository.GetGenresByNamesAsync(movie.Genres.Select(g => g.Name));
 
-                if (foundGenres.Count != movieDto.Genres.Count)
+                if (foundGenres.Count != movie.Genres.Count)
                 {
-                    var missingGenres = movieDto.Genres
-                        .Where(g => !foundGenres.Any(fg => fg.Name.Equals(g, StringComparison.OrdinalIgnoreCase)))
+                    var missingGenres = movie.Genres
+                        .Where(g => !foundGenres.Any(fg => fg.Name.Equals(g.Name, StringComparison.OrdinalIgnoreCase)))
                         .ToList();
 
                     throw new BadHttpRequestException($"The following genres do not exist: {string.Join(", ", missingGenres)}");
@@ -45,8 +42,7 @@ namespace MovieDatabase.Core.Services
                 movie.Genres = foundGenres;
             }
 
-            await _movieRepository.CreateAsync(movie);
-            return movie;
+            return await _movieRepository.CreateAsync(movie);
         }
 
         public async Task DeleteAsync(Movie movie)
@@ -54,46 +50,31 @@ namespace MovieDatabase.Core.Services
             await _movieRepository.RemoveAsync(movie);
         }
 
-        public async Task<Movie> UpdateAsync(MovieUpdateDto updatedMovie)
+        public async Task<Movie> UpdateAsync(Movie movie)
         {
-            var existingMovie = await _movieRepository.GetByIdAsync(
-                x => x.Id == updatedMovie.Id, 
-                tracked: true,
-                includeProperties: "Genres");
+            var movieExists = await _movieRepository.MovieExistsAsync(movie.Title);
                 
-            if (existingMovie == null)
+            if (!movieExists)
             {
-                throw new BadHttpRequestException($"Movie with ID {updatedMovie.Id} not found.");
+                throw new BadHttpRequestException($"Movie with ID {movie.Id} not found.");
             }
 
-            _mapper.Map(updatedMovie, existingMovie);
-
-            if (updatedMovie.Genres != null)
+            if (movie.Genres.Count > 0)
             {
-                var newGenres = await _genreRepository.GetGenresByNamesAsync(updatedMovie.Genres);
+                var newGenres = await _genreRepository.GetGenresByNamesAsync(movie.Genres.Select(gn => gn.Name));
 
-                if (newGenres.Count != updatedMovie.Genres.Count)
+                if (newGenres.Count != movie.Genres.Count)
                 {
-                    var missingGenres = updatedMovie.Genres
-                        .Where(g => !newGenres.Any(fg => fg.Name.Equals(g, StringComparison.OrdinalIgnoreCase)))
+                    var missingGenres = movie.Genres
+                        .Where(g => !newGenres.Any(fg => fg.Name.Equals(g.Name, StringComparison.OrdinalIgnoreCase)))
                         .ToList();
 
                     throw new BadHttpRequestException($"The following genres do not exist: {string.Join(", ", missingGenres)}");
                 }
-
-                existingMovie.Genres.Clear();
-                foreach (var genre in newGenres)
-                {
-                    existingMovie.Genres.Add(genre);
-                }
-            }
-            else
-            {
-                existingMovie.Genres.Clear();
             }
 
-            await _movieRepository.UpdateAsync(existingMovie);
-            return existingMovie;
+            await _movieRepository.UpdateAsync(movie);
+            return movie;
         }
 
         public async Task<bool> MovieExistsAsync(string title)
