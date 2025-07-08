@@ -90,10 +90,11 @@ namespace MovieDatabase.Core.Repository
             await SaveAsync();
         }
 
-        public virtual async Task RemoveAsync(T entity)
+        public virtual async Task<bool> RemoveAsync(T entity)
         {
             _dbSet.Remove(entity);
             await SaveAsync();
+            return true;
         }
 
         public virtual async Task SaveAsync()

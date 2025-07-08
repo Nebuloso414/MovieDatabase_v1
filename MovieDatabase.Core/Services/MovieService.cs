@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using MovieDatabase.Core.Models;
 using MovieDatabase.Core.Models.Dto;
 using MovieDatabase.Core.Repository.IRepository;
@@ -45,9 +44,9 @@ namespace MovieDatabase.Core.Services
             return await _movieRepository.CreateAsync(movie);
         }
 
-        public async Task DeleteAsync(Movie movie)
+        public async Task<bool> DeleteAsync(Movie movie)
         {
-            await _movieRepository.RemoveAsync(movie);
+            return await _movieRepository.RemoveAsync(movie);
         }
 
         public async Task<Movie> UpdateAsync(Movie movie)

@@ -10,7 +10,7 @@ namespace MovieDatabase.Core.Repository.IRepository
         Task<T?> GetByIdAsync(Expression<Func<T, bool>>? filter = null, bool tracked = true, string? includeProperties = null);
         Task<bool> CreateAsync(T entity);
         Task UpdateAsync(T entity);
-        Task RemoveAsync(T entity);
+        Task<bool> RemoveAsync(T entity);
         Task SaveAsync();
     }
 }
