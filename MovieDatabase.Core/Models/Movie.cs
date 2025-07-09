@@ -6,7 +6,7 @@ namespace MovieDatabase.Core.Models
     {
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
-        public DateTime ReleaseDate { get; set; }
+        public DateOnly ReleaseDate { get; set; }
         public int? Length { get; set; } // Length in minutes
         public decimal Rating { get; set; }
         public DateTime CreatedDate { get; set; }

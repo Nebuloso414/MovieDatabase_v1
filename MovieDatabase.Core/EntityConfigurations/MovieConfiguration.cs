@@ -50,7 +50,7 @@ namespace MovieDatabase.Core.EntityConfigurations
                 {
                     Id = 1,
                     Title = "Inception",
-                    ReleaseDate = new DateTime(2010, 7, 16),
+                    ReleaseDate = new DateOnly(2010, 7, 16),
                     Length = 148,
                     Rating = 8.8m
                 },
@@ -58,7 +58,7 @@ namespace MovieDatabase.Core.EntityConfigurations
                 {
                     Id = 2,
                     Title = "The Matrix",
-                    ReleaseDate = new DateTime(1999, 3, 31),
+                    ReleaseDate = new DateOnly(1999, 3, 31),
                     Length = 136,
                     Rating = 8.7m
                 },
@@ -66,7 +66,7 @@ namespace MovieDatabase.Core.EntityConfigurations
                 {
                     Id = 3,
                     Title = "The Shawshank Redemption",
-                    ReleaseDate = new DateTime(1994, 9, 23),
+                    ReleaseDate = new DateOnly(1994, 9, 23),
                     Length = 142,
                     Rating = 9.3m
                 });
