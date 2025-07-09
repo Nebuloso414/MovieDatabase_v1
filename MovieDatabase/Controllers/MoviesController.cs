@@ -1,10 +1,8 @@
 using AutoMapper;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using MovieDatabase.Models;
-using MovieDatabase.Models.Dto;
-using MovieDatabase.Repository.IRepository;
-using MovieDatabase.Services;
+using MovieDatabase.Core.Models;
+using MovieDatabase.Core.Models.Dto;
+using MovieDatabase.Core.Services;
 using Swashbuckle.AspNetCore.Filters;
 using System.Net;
 
@@ -19,25 +17,25 @@ namespace MovieDatabase.Controllers
         protected APIResponse _response;
         private readonly IMapper _mapper;
         private readonly IMovieService _movieService;
+        private readonly IGenreService _genreService;
 
-        public MoviesController(IMovieService movieService, IMapper mapper)
+        public MoviesController(IMovieService movieService, IMapper mapper, IGenreService genreService)
         {
             _movieService = movieService;
             _mapper = mapper;
             _response = new();
+            _genreService = genreService;
         }
 
         [HttpGet]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status500InternalServerError)]
-        [SwaggerResponseExample(StatusCodes.Status200OK, typeof(APIResponseOkExample))]
-        [SwaggerResponseExample(StatusCodes.Status500InternalServerError, typeof(APIResponseInternalServerErrorExample))]
-        public async Task<ActionResult<APIResponse>> GetMovies()
+        public async Task<ActionResult<APIResponse>> GetMovies([FromQuery] bool includeCast = false)
         {
             try
             {
-                var movies = await _movieService.GetAllAsync(filter: null, includeProperties: "Genres");
-                _response.Result = _mapper.Map<List<MovieDto>>(movies);
+                var movies = await _movieService.GetMoviesAsync(includeCast: includeCast);
+                _response.Result = movies;
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -55,11 +53,7 @@ namespace MovieDatabase.Controllers
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status500InternalServerError)]
-        [SwaggerResponseExample(StatusCodes.Status200OK, typeof(APIResponseOkExample))]
-        [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(APIResponseBadRequestExample))]
-        [SwaggerResponseExample(StatusCodes.Status404NotFound, typeof(APIResponseNotFoundExample))]
-        [SwaggerResponseExample(StatusCodes.Status500InternalServerError, typeof(APIResponseInternalServerErrorExample))]
-        public async Task<ActionResult<APIResponse>> GetMovie(int id)
+        public async Task<ActionResult<APIResponse>> GetMovie(int id, [FromQuery] bool includeCast = false)
         {
             try
             {
@@ -71,9 +65,9 @@ namespace MovieDatabase.Controllers
                     return BadRequest(_response);
                 }
 
-                var movie = await _movieService.GetByIdAsync(x => x.Id == id, false, "Genres");
+                var movie = await _movieService.GetMoviesAsync(filter: m => m.Id == id, includeCast);
 
-                if (movie == null)
+                if (movie.ToList().Count == 0)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
@@ -81,7 +75,7 @@ namespace MovieDatabase.Controllers
                     return NotFound(_response);
                 }
 
-                _response.Result = _mapper.Map<MovieDto>(movie);
+                _response.Result = movie;
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -105,7 +99,7 @@ namespace MovieDatabase.Controllers
         {
             try
             {
-                if (await _movieService.GetByIdAsync(x => x.Title == createMovieDto.Title) != null)
+                if (await _movieService.MovieExistsAsync(createMovieDto.Title))
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -121,7 +115,8 @@ namespace MovieDatabase.Controllers
                     return BadRequest(_response);
                 }
 
-                var movie = await _movieService.CreateAsync(createMovieDto);
+                var movie = _mapper.Map<Movie>(createMovieDto);
+                await _movieService.CreateAsync(movie);
 
                 _response.Result = _mapper.Map<MovieDto>(movie);
                 _response.StatusCode = HttpStatusCode.Created;
@@ -165,7 +160,7 @@ namespace MovieDatabase.Controllers
                     return BadRequest(_response);
                 }
 
-                var movie = await _movieService.GetByIdAsync(x => x.Id == id);
+                var movie = await _movieService.GetMoviesAsync(x => x.Id == id);
 
                 if (movie == null)
                 {
@@ -175,7 +170,7 @@ namespace MovieDatabase.Controllers
                     return NotFound(_response);
                 }
 
-                await _movieService.DeleteAsync(movie);
+                await _movieService.DeleteAsync(_mapper.Map<Movie>(movie.SingleOrDefault()));
 
                 _response.StatusCode = HttpStatusCode.NoContent;
                 _response.IsSuccess = true;
@@ -198,21 +193,36 @@ namespace MovieDatabase.Controllers
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(APIResponseOkExample))]
         [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(APIResponseBadRequestExample))]
         [SwaggerResponseExample(StatusCodes.Status500InternalServerError, typeof(APIResponseInternalServerErrorExample))]
-        public async Task<ActionResult<APIResponse>> UpdateMovie(int id, MovieUpdateDto updatedMovie)
+        public async Task<ActionResult<APIResponse>> UpdateMovie(int id, MovieUpdateDto request)
         {
             try
             { 
-                if (id <= 0 || updatedMovie == null || id != updatedMovie.Id)
+                if (id <= 0 || request == null || id != request.Id)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Errors.Add("Invalid ID or movie data provided.");
                     return BadRequest(_response);
                 }
+                // inject genre service. Create new method in genre service to retrieve the genres in the updated movie and the genres not found in the db
+                var genres = await _genreService.ProcessGenreNamesAsync(request.Genres);
 
-                var movie = await _movieService.UpdateAsync(updatedMovie);
+                if (genres.NotFoundGenres.Count > 0)
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    _response.Errors = new List<string>
+                    {
+                        "The following genres do not exist: " + string.Join(", ", genres.NotFoundGenres)
+                    };
+                    return BadRequest(_response);
+                }
 
-                _response.Result = _mapper.Map<MovieDto>(movie);
+                var movie = _mapper.Map<Movie>(request);
+                movie.Genres = genres.FoundGenres;
+                var UpdatedMovie = await _movieService.UpdateAsync(movie);
+
+                _response.Result = _mapper.Map<MovieDto>(UpdatedMovie);
                 _response.StatusCode = HttpStatusCode.OK;
                 _response.IsSuccess = true;
                 return Ok(_response);

@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection; // Ensure this is included
 using MovieDatabase;
-using MovieDatabase.Data;
-using MovieDatabase.Repository;
-using MovieDatabase.Repository.IRepository;
-using MovieDatabase.Services;
+using MovieDatabase.Core.Data;
+using MovieDatabase.Core.Repository;
+using MovieDatabase.Core.Repository.IRepository;
+using MovieDatabase.Core.Services;
 using Swashbuckle.AspNetCore.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
