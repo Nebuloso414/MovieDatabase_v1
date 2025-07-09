@@ -3,7 +3,7 @@
     public class MovieCreateDto
     {
         public string Title { get; set; } = string.Empty;
-        public DateTime ReleaseDate { get; set; }
+        public DateOnly ReleaseDate { get; set; }
         public int? Length { get; set; }
         public decimal Rating { get; set; } 
         public List<string> Genres { get; set; } = new();

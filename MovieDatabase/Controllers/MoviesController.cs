@@ -1,4 +1,5 @@
 using AutoMapper;
+using Azure.Core;
 using Microsoft.AspNetCore.Mvc;
 using MovieDatabase.Core.Models;
 using MovieDatabase.Core.Models.Dto;
@@ -93,25 +94,38 @@ namespace MovieDatabase.Controllers
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(APIResponseOkExample))]
         [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(APIResponseBadRequestExample))]
         [SwaggerResponseExample(StatusCodes.Status500InternalServerError, typeof(APIResponseInternalServerErrorExample))]
-        public async Task<ActionResult<APIResponse>> CreateMovie([FromBody] MovieCreateDto createMovieDto)
+        public async Task<ActionResult<APIResponse>> CreateMovie([FromBody] MovieCreateDto request)
         {
             try
             {
-                if (await _movieService.MovieExistsAsync(createMovieDto.Title))
+                if (await _movieService.MovieExistsAsync(request.Title))
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Errors.Add("Movie already exists.");
                     return BadRequest(_response);
                 }
 
-                if (createMovieDto == null)
+                if (request == null)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Errors.Add("Invalid movie data provided.");
                     return BadRequest(_response);
                 }
 
-                var movie = _mapper.Map<Movie>(createMovieDto);
+                var genres = await _genreService.ProcessGenreNamesAsync(request.Genres);
+
+                if (genres.NotFoundGenres.Count > 0)
+                {
+                    _response.StatusCode = HttpStatusCode.NotFound;
+                    _response.Errors = new List<string>
+                    {
+                        "The following genres do not exist: " + string.Join(", ", genres.NotFoundGenres)
+                    };
+                    return BadRequest(_response);
+                }
+
+                var movie = _mapper.Map<Movie>(request);
+                movie.Genres = genres.FoundGenres;
                 await _movieService.CreateAsync(movie);
 
                 _response.IsSuccess = true;
@@ -156,7 +170,7 @@ namespace MovieDatabase.Controllers
 
                 var movie = await _movieService.GetMoviesAsync(x => x.Id == id);
 
-                if (movie == null)
+                if (movie.Count() == 0)
                 {
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.Errors.Add($"Movie with ID {id} not found.");

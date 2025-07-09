@@ -25,22 +25,6 @@ namespace MovieDatabase.Core.Services
 
         public async Task<bool> CreateAsync(Movie movie)
         {
-            if (movie.Genres != null && movie.Genres.Any())
-            {
-                var foundGenres = await _genreRepository.GetGenresByNamesAsync(movie.Genres.Select(g => g.Name));
-
-                if (foundGenres.Count != movie.Genres.Count)
-                {
-                    var missingGenres = movie.Genres
-                        .Where(g => !foundGenres.Any(fg => fg.Name.Equals(g.Name, StringComparison.OrdinalIgnoreCase)))
-                        .ToList();
-
-                    throw new BadHttpRequestException($"The following genres do not exist: {string.Join(", ", missingGenres)}");
-                }
-
-                movie.Genres = foundGenres;
-            }
-
             return await _movieRepository.CreateAsync(movie);
         }
 
