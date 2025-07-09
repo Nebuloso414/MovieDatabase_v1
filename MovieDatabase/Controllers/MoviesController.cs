@@ -35,13 +35,13 @@ namespace MovieDatabase.Controllers
             try
             {
                 var movies = await _movieService.GetMoviesAsync(includeCast: includeCast);
+                _response.IsSuccess = true;
                 _response.Result = movies;
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
             catch (Exception ex)
             {
-                _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.InternalServerError;
                 _response.Errors.Add(ex.Message);
                 return StatusCode((int)_response.StatusCode, _response);
@@ -59,7 +59,6 @@ namespace MovieDatabase.Controllers
             {
                 if (id <= 0)
                 {
-                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Errors.Add("Invalid ID provided.");
                     return BadRequest(_response);
@@ -69,19 +68,18 @@ namespace MovieDatabase.Controllers
 
                 if (movie.ToList().Count == 0)
                 {
-                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.Errors.Add($"Movie with ID {id} not found.");
                     return NotFound(_response);
                 }
 
+                _response.IsSuccess = true;
                 _response.Result = movie;
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
             catch (Exception ex)
             {
-                _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.InternalServerError;
                 _response.Errors.Add(ex.Message);
                 return StatusCode((int)_response.StatusCode, _response);
@@ -101,7 +99,6 @@ namespace MovieDatabase.Controllers
             {
                 if (await _movieService.MovieExistsAsync(createMovieDto.Title))
                 {
-                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Errors.Add("Movie already exists.");
                     return BadRequest(_response);
@@ -109,7 +106,6 @@ namespace MovieDatabase.Controllers
 
                 if (createMovieDto == null)
                 {
-                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Errors.Add("Invalid movie data provided.");
                     return BadRequest(_response);
@@ -118,6 +114,7 @@ namespace MovieDatabase.Controllers
                 var movie = _mapper.Map<Movie>(createMovieDto);
                 await _movieService.CreateAsync(movie);
 
+                _response.IsSuccess = true;
                 _response.Result = _mapper.Map<MovieDto>(movie);
                 _response.StatusCode = HttpStatusCode.Created;
 
@@ -125,14 +122,12 @@ namespace MovieDatabase.Controllers
             }
             catch (BadHttpRequestException ex)
             {
-                _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.Errors.Add(ex.Message);
                 return BadRequest(_response);
             }
             catch (Exception ex)
             {
-                _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.InternalServerError;
                 _response.Errors.Add(ex.Message);
                 return StatusCode((int)_response.StatusCode, _response);
@@ -154,7 +149,6 @@ namespace MovieDatabase.Controllers
             {
                 if (id <= 0)
                 {
-                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Errors.Add("Invalid ID provided.");
                     return BadRequest(_response);
@@ -164,7 +158,6 @@ namespace MovieDatabase.Controllers
 
                 if (movie == null)
                 {
-                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.Errors.Add($"Movie with ID {id} not found.");
                     return NotFound(_response);
@@ -179,7 +172,6 @@ namespace MovieDatabase.Controllers
             }
             catch (Exception ex)
             {
-                _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.InternalServerError;
                 _response.Errors.Add(ex.Message);
                 return StatusCode((int)_response.StatusCode, _response);
@@ -199,7 +191,6 @@ namespace MovieDatabase.Controllers
             { 
                 if (id <= 0 || request == null || id != request.Id)
                 {
-                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Errors.Add("Invalid ID or movie data provided.");
                     return BadRequest(_response);
@@ -209,7 +200,6 @@ namespace MovieDatabase.Controllers
 
                 if (genres.NotFoundGenres.Count > 0)
                 {
-                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.Errors = new List<string>
                     {
@@ -229,14 +219,12 @@ namespace MovieDatabase.Controllers
             }
             catch (BadHttpRequestException ex)
             {
-                _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.Errors.Add(ex.Message);
                 return BadRequest(_response);
             }
             catch (Exception ex)
             {
-                _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.InternalServerError;
                 _response.Errors.Add(ex.Message);
                 return StatusCode((int)_response.StatusCode, _response);

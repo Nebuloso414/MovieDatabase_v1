@@ -38,14 +38,14 @@ namespace MovieDatabase.Controllers
                 {
                     peopleList = await _peopleService.GetByNameAsync(name);
                 }
+                _response.IsSuccess = true;
                 _response.Result = _mapper.Map<IEnumerable<PeopleDto>>(peopleList);
-                _response.StatusCode = System.Net.HttpStatusCode.OK;
+                _response.StatusCode = HttpStatusCode.OK;
             }
             catch (Exception ex)
             {
-                _response.IsSuccess = false;
                 _response.Errors = new List<string> { ex.Message };
-                _response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                _response.StatusCode = HttpStatusCode.InternalServerError;
             }
             return Ok(_response);
         }
@@ -58,21 +58,20 @@ namespace MovieDatabase.Controllers
                 var person = await _peopleService.GetByIdAsync(p => p.Id == id, false);
                 if (person == null)
                 {
-                    _response.IsSuccess = false;
-                    _response.StatusCode = System.Net.HttpStatusCode.NotFound;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     _response.Errors = new List<string> { "Person not found" };
                     return NotFound(_response);
                 }
 
+                _response.IsSuccess = true;
                 _response.Result = _mapper.Map<PeopleDto>(person);
-                _response.StatusCode = System.Net.HttpStatusCode.OK;
+                _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
             catch (Exception ex)
             {
-                _response.IsSuccess = false;
                 _response.Errors = new List<string> { ex.Message };
-                _response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                _response.StatusCode = HttpStatusCode.InternalServerError;
                 return StatusCode((int)_response.StatusCode, _response);
             }
         }
@@ -84,23 +83,22 @@ namespace MovieDatabase.Controllers
             {
                 if (peopleDto == null)
                 {
-                    _response.IsSuccess = false;
-                    _response.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Errors = new List<string> { "Invalid data" };
                     return BadRequest(_response);
                 }
 
                 var person = await _peopleService.CreateAsync(peopleDto);
 
+                _response.IsSuccess = true;
                 _response.Result = _mapper.Map<PeopleDto>(person);
-                _response.StatusCode = System.Net.HttpStatusCode.Created;
+                _response.StatusCode = HttpStatusCode.Created;
                 return CreatedAtAction(nameof(GetPersonById), new { id = person.Id }, _response);
             }
             catch (Exception ex)
             {
-                _response.IsSuccess = false;
                 _response.Errors = new List<string> { ex.Message };
-                _response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                _response.StatusCode = HttpStatusCode.InternalServerError;
                 return StatusCode((int)_response.StatusCode, _response);
             }
         }
@@ -114,22 +112,21 @@ namespace MovieDatabase.Controllers
 
                 if (person == null)
                 {
-                    _response.IsSuccess = false;
-                    _response.StatusCode = System.Net.HttpStatusCode.NotFound;
+                    _response.StatusCode = HttpStatusCode.NotFound;
                     _response.Errors = new List<string> { "Person not found" };
                     return NotFound(_response);
                 }
 
                 await _peopleService.DeleteAsync(person);
-                _response.StatusCode = System.Net.HttpStatusCode.NoContent;
+                _response.IsSuccess = true;
+                _response.StatusCode = HttpStatusCode.NoContent;
 
                 return NoContent();
             }
             catch (Exception ex)
             {
-                _response.IsSuccess = false;
                 _response.Errors = new List<string> { ex.Message };
-                _response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                _response.StatusCode = HttpStatusCode.InternalServerError;
                 return StatusCode((int)_response.StatusCode, _response);
             }
         }
@@ -141,30 +138,28 @@ namespace MovieDatabase.Controllers
             {
                 if (updatedPeople == null || updatedPeople.Id != id)
                 {
-                    _response.IsSuccess = false;
-                    _response.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Errors = new List<string> { "Invalid data" };
                     return BadRequest(_response);
                 }
 
                 var updatedPerson = await _peopleService.UpdateAsync(updatedPeople);
 
+                _response.IsSuccess = true;
                 _response.Result = _mapper.Map<PeopleDto>(updatedPerson);
-                _response.StatusCode = System.Net.HttpStatusCode.OK;
+                _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
             catch (BadHttpRequestException ex)
             {
-                _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.Errors.Add(ex.Message);
                 return BadRequest(_response);
             }
             catch (Exception ex)
             {
-                _response.IsSuccess = false;
                 _response.Errors = new List<string> { ex.Message };
-                _response.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                _response.StatusCode = HttpStatusCode.InternalServerError;
                 return StatusCode((int)_response.StatusCode, _response);
             }
         }

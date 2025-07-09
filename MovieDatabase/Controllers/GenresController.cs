@@ -35,13 +35,13 @@ namespace MovieDatabase.Controllers
             try
             {
                 var genres = await _genreService.GetAllAsync();
+                _response.IsSuccess = true;
                 _response.Result = _mapper.Map<List<GenreDto>>(genres);
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
             catch (Exception ex)
             {
-                _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.InternalServerError;
                 _response.Errors.Add(ex.Message);
                 return StatusCode((int)_response.StatusCode, _response);
@@ -63,7 +63,6 @@ namespace MovieDatabase.Controllers
             {
                 if (id <= 0)
                 {
-                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Errors.Add("Invalid ID provided.");
                     return BadRequest(_response);
@@ -73,19 +72,18 @@ namespace MovieDatabase.Controllers
 
                 if (genre == null)
                 {
-                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.Errors.Add($"Genre with ID {id} not found.");
                     return NotFound(_response);
                 }
 
+                _response.IsSuccess = true;
                 _response.Result = _mapper.Map<GenreDto>(genre);
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
             catch (Exception ex)
             {
-                _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.InternalServerError;
                 _response.Errors.Add(ex.Message);
                 return StatusCode((int)_response.StatusCode, _response);
@@ -105,7 +103,6 @@ namespace MovieDatabase.Controllers
             {
                 if (await _genreService.GetByIdAsync(x => x.Name == createGenreDto.Name) != null)
                 {
-                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Errors.Add("Genre already exists.");
                     return BadRequest(_response);
@@ -113,7 +110,6 @@ namespace MovieDatabase.Controllers
 
                 if (createGenreDto == null)
                 {
-                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Errors.Add("Invalid genre data provided.");
                     return BadRequest(_response);
@@ -122,6 +118,7 @@ namespace MovieDatabase.Controllers
                 var genre = _mapper.Map<Genre>(createGenreDto);
                 await _genreService.CreateAsync(genre);
 
+                _response.IsSuccess = true;
                 _response.Result = _mapper.Map<GenreDto>(genre);
                 _response.StatusCode = HttpStatusCode.Created;
 
@@ -129,7 +126,6 @@ namespace MovieDatabase.Controllers
             }
             catch (Exception ex)
             {
-                _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.InternalServerError;
                 _response.Errors.Add(ex.Message);
                 return StatusCode((int)_response.StatusCode, _response);
@@ -151,7 +147,6 @@ namespace MovieDatabase.Controllers
             {
                 if (id <= 0)
                 {
-                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Errors.Add("Invalid ID provided.");
                     return BadRequest(_response);
@@ -161,7 +156,6 @@ namespace MovieDatabase.Controllers
 
                 if (genre == null)
                 {
-                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.Errors.Add($"Genre with ID {id} not found.");
                     return NotFound(_response);
@@ -176,7 +170,6 @@ namespace MovieDatabase.Controllers
             }
             catch (Exception ex)
             {
-                _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.InternalServerError;
                 _response.Errors.Add(ex.Message);
                 return StatusCode((int)_response.StatusCode, _response);
@@ -196,7 +189,6 @@ namespace MovieDatabase.Controllers
             { 
                 if (id <= 0 || updatedGenre == null || id != updatedGenre.Id)
                 {
-                    _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
                     _response.Errors.Add("Invalid ID or genre data provided.");
                     return BadRequest(_response);
@@ -213,7 +205,6 @@ namespace MovieDatabase.Controllers
             }
             catch (Exception ex)
             {
-                _response.IsSuccess = false;
                 _response.StatusCode = HttpStatusCode.InternalServerError;
                 _response.Errors.Add(ex.Message);
                 return StatusCode((int)_response.StatusCode, _response);
