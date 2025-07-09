@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection; // Ensure this is included
 using MovieDatabase;
 using MovieDatabase.Core.Data;
 using MovieDatabase.Core.Repository;

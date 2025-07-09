@@ -51,29 +51,26 @@ namespace MovieDatabase.Core.Services
 
         public async Task<Movie> UpdateAsync(Movie movie)
         {
-            var movieExists = await _movieRepository.MovieExistsAsync(movie.Title);
-                
-            if (!movieExists)
+            var existingMovie = await _movieRepository.GetByIdAsync(m => m.Id == movie.Id, tracked: true, includeProperties: "Genres");
+            
+            if (existingMovie == null)
             {
                 throw new BadHttpRequestException($"Movie with ID {movie.Id} not found.");
             }
 
-            if (movie.Genres.Count > 0)
+            existingMovie.Title = movie.Title;
+            existingMovie.ReleaseDate = movie.ReleaseDate;
+            existingMovie.Length = movie.Length;
+            existingMovie.Rating = movie.Rating;
+            
+            existingMovie.Genres.Clear();
+            foreach (var genre in movie.Genres)
             {
-                var newGenres = await _genreRepository.GetGenresByNamesAsync(movie.Genres.Select(gn => gn.Name));
-
-                if (newGenres.Count != movie.Genres.Count)
-                {
-                    var missingGenres = movie.Genres
-                        .Where(g => !newGenres.Any(fg => fg.Name.Equals(g.Name, StringComparison.OrdinalIgnoreCase)))
-                        .ToList();
-
-                    throw new BadHttpRequestException($"The following genres do not exist: {string.Join(", ", missingGenres)}");
-                }
+                existingMovie.Genres.Add(genre);
             }
-
-            await _movieRepository.UpdateAsync(movie);
-            return movie;
+            
+            await _movieRepository.UpdateAsync(existingMovie);
+            return existingMovie;
         }
 
         public async Task<bool> MovieExistsAsync(string title)
