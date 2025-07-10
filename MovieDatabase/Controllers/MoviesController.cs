@@ -30,34 +30,21 @@ namespace MovieDatabase.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<APIResponse>> GetMovies([FromQuery] bool includeCast = false)
         {
-            try
-            {
-                var movies = await _movieService.GetMoviesAsync(includeCast: includeCast);
+                var movies = await _movieService.GetAllAsync(includeCast: includeCast);
                 _response.IsSuccess = true;
                 _response.Result = movies;
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.StatusCode = HttpStatusCode.InternalServerError;
-                _response.Errors.Add(ex.Message);
-                return StatusCode((int)_response.StatusCode, _response);
-            }
         }
 
         [HttpGet("{id:int}", Name = "GetMovie")]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<APIResponse>> GetMovie(int id, [FromQuery] bool includeCast = false)
         {
-            try
-            {
                 if (id <= 0)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -65,9 +52,9 @@ namespace MovieDatabase.Controllers
                     return BadRequest(_response);
                 }
 
-                var movie = await _movieService.GetMoviesAsync(filter: m => m.Id == id, includeCast);
+                var movie = await _movieService.GetByIdAsync(id, includeCast);
 
-                if (movie.ToList().Count == 0)
+                if (movie is null)
                 {
                     _response.StatusCode = HttpStatusCode.NotFound;
                     _response.Errors.Add($"Movie with ID {id} not found.");
@@ -78,22 +65,13 @@ namespace MovieDatabase.Controllers
                 _response.Result = movie;
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.StatusCode = HttpStatusCode.InternalServerError;
-                _response.Errors.Add(ex.Message);
-                return StatusCode((int)_response.StatusCode, _response);
-            }
         }
 
         [HttpPost]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status500InternalServerError)]
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(APIResponseOkExample))]
         [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(APIResponseBadRequestExample))]
-        [SwaggerResponseExample(StatusCodes.Status500InternalServerError, typeof(APIResponseInternalServerErrorExample))]
         public async Task<ActionResult<APIResponse>> CreateMovie([FromBody] MovieCreateDto request)
         {
             if (await _movieService.MovieExistsAsync(request.Title))
@@ -137,15 +115,11 @@ namespace MovieDatabase.Controllers
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status500InternalServerError)]
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(APIResponseOkExample))]
         [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(APIResponseBadRequestExample))]
         [SwaggerResponseExample(StatusCodes.Status404NotFound, typeof(APIResponseNotFoundExample))]
-        [SwaggerResponseExample(StatusCodes.Status500InternalServerError, typeof(APIResponseInternalServerErrorExample))]
         public async Task<ActionResult<APIResponse>> DeleteMovie(int id)
         {
-            try
-            {
                 if (id <= 0)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -153,7 +127,7 @@ namespace MovieDatabase.Controllers
                     return BadRequest(_response);
                 }
 
-                var movie = await _movieService.GetMoviesAsync(x => x.Id == id);
+                var movie = await _movieService.GetAllAsync(x => x.Id == id);
 
                 if (movie.Count() == 0)
                 {
@@ -168,26 +142,15 @@ namespace MovieDatabase.Controllers
                 _response.IsSuccess = true;
 
                 return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.StatusCode = HttpStatusCode.InternalServerError;
-                _response.Errors.Add(ex.Message);
-                return StatusCode((int)_response.StatusCode, _response);
-            }
         }
 
         [HttpPut("{id:int}")]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status500InternalServerError)]
         [SwaggerResponseExample(StatusCodes.Status200OK, typeof(APIResponseOkExample))]
         [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(APIResponseBadRequestExample))]
-        [SwaggerResponseExample(StatusCodes.Status500InternalServerError, typeof(APIResponseInternalServerErrorExample))]
         public async Task<ActionResult<APIResponse>> UpdateMovie(int id, MovieUpdateDto request)
         {
-            try
-            { 
                 if (id <= 0 || request == null || id != request.Id)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -215,19 +178,6 @@ namespace MovieDatabase.Controllers
                 _response.StatusCode = HttpStatusCode.OK;
                 _response.IsSuccess = true;
                 return Ok(_response);
-            }
-            catch (BadHttpRequestException ex)
-            {
-                _response.StatusCode = HttpStatusCode.BadRequest;
-                _response.Errors.Add(ex.Message);
-                return BadRequest(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.StatusCode = HttpStatusCode.InternalServerError;
-                _response.Errors.Add(ex.Message);
-                return StatusCode((int)_response.StatusCode, _response);
-            }
         }
     }
 }

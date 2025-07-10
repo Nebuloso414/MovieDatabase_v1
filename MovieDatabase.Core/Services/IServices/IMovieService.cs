@@ -6,7 +6,8 @@ namespace MovieDatabase.Core.Services
 {
     public interface IMovieService
     {
-        Task<IEnumerable<MovieDto>> GetMoviesAsync (Expression<Func<Movie, bool>>? filter = null, bool includeCast = false);
+        Task<IEnumerable<MovieDto>> GetAllAsync (Expression<Func<Movie, bool>>? filter = null, bool includeCast = false);
+        Task<MovieDto?> GetByIdAsync(int id, bool includeCast = false);
         Task<bool> CreateAsync(Movie movie);
         Task<bool> DeleteAsync(Movie movie);
         Task<Movie> UpdateAsync(Movie movie);

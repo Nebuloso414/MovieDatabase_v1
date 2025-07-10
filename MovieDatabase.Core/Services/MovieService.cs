@@ -19,9 +19,15 @@ namespace MovieDatabase.Core.Services
             _movieValidator = movieValidator;
         }
 
-        public async Task<IEnumerable<MovieDto>> GetMoviesAsync(Expression<Func<Movie, bool>>? filter = null, bool includeCast = false)
+        public async Task<IEnumerable<MovieDto>> GetAllAsync(Expression<Func<Movie, bool>>? filter = null, bool includeCast = false)
         {
             return await _movieRepository.GetMoviesAsync(filter, includeCast);
+        }
+
+        public async Task<MovieDto?> GetByIdAsync(int id, bool includeCast = false)
+        {
+            var movies = await _movieRepository.GetMoviesAsync(m => m.Id == id, includeCast);
+            return movies.FirstOrDefault();
         }
 
         public async Task<bool> CreateAsync(Movie movie)
