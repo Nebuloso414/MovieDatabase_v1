@@ -74,13 +74,6 @@ namespace MovieDatabase.Controllers
         [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(APIResponseBadRequestExample))]
         public async Task<ActionResult<APIResponse>> CreateMovie([FromBody] MovieCreateDto request)
         {
-            if (await _movieService.MovieExistsAsync(request.Title))
-            {
-                _response.StatusCode = HttpStatusCode.BadRequest;
-                _response.Errors.Add("Movie already exists.");
-                return BadRequest(_response);
-            }
-
             if (request == null)
             {
                 _response.StatusCode = HttpStatusCode.BadRequest;

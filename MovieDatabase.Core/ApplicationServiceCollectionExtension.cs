@@ -22,7 +22,7 @@ namespace MovieDatabase.Core
             services.AddScoped<IGenreRepository, GenreRepository>();
             services.AddScoped<IPeopleRepository, PeopleRepository>();
 
-            services.AddValidatorsFromAssemblyContaining<IApplicationMarker>(ServiceLifetime.Singleton);
+            services.AddValidatorsFromAssemblyContaining<IApplicationMarker>();
 
             return services;
         }

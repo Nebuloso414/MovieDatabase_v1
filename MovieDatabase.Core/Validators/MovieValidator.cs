@@ -1,15 +1,21 @@
 ﻿using FluentValidation;
 using MovieDatabase.Core.Models;
+using MovieDatabase.Core.Repository.IRepository;
 
 namespace MovieDatabase.Core.Validators
-{
+{    
     public class MovieValidator : AbstractValidator<Movie>
     {
-        public MovieValidator() 
+        private readonly IMovieRepository _movieRepository;
+
+        public MovieValidator(IMovieRepository movieRepository)
         { 
+            _movieRepository = movieRepository;
+
             RuleFor(m => m.Title)
                 .NotEmpty().WithMessage("Title is required.")
-                .MaximumLength(200).WithMessage("Title cannot exceed 50 characters.");
+                .MaximumLength(200).WithMessage("Title cannot exceed 50 characters.")
+                .MustAsync(ValidateMovieExistence).WithMessage("Movie already exists.");
 
             RuleFor(m => m.ReleaseDate)
                 .NotEmpty().WithMessage("Release date is required.")
@@ -20,6 +26,13 @@ namespace MovieDatabase.Core.Validators
 
             RuleFor(m => m.Rating)
                 .InclusiveBetween(0, 10).WithMessage("Rating must be between 0 and 10.");
+        }
+
+        private async Task<bool> ValidateMovieExistence(Movie movie, string title, CancellationToken token)
+        {
+            var existingMovie = await _movieRepository.GetByIdAsync(m => m.Title == title, false);
+            
+            return existingMovie == null || existingMovie.ReleaseDate != movie.ReleaseDate;
         }
     }
 }
