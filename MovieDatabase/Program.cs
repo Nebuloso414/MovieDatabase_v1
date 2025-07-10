@@ -1,42 +1,22 @@
 using Microsoft.EntityFrameworkCore;
 using MovieDatabase;
-using MovieDatabase.Core.Data;
-using MovieDatabase.Core.Repository;
-using MovieDatabase.Core.Repository.IRepository;
-using MovieDatabase.Core.Services;
-using Swashbuckle.AspNetCore.Filters;
+using MovieDatabase.Api;
+using MovieDatabase.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MovieDB")));
-
-builder.Services.AddScoped<IMovieRepository, MovieRepository>();
-builder.Services.AddScoped<IGenreRepository, GenreRepository>();
-builder.Services.AddScoped<IPeopleRepository, PeopleRepository>();
-
-builder.Services.AddScoped<IMovieService, MovieService>();
-builder.Services.AddScoped<IGenreService, GenreService>();
-builder.Services.AddScoped<IPeopleService, PeopleService>();
-
+builder.Services.AddDatabase(builder.Configuration.GetConnectionString("MovieDB")!);
+builder.Services.AddApplicationServices();
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 
 builder.Services
-    .AddControllers()
-    .AddNewtonsoftJson();
+    .AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.ExampleFilters();
-});
 
 // Register Swagger examples
-builder.Services.AddSwaggerExamplesFromAssemblyOf<APIResponseBadRequestExample>();
-builder.Services.AddSwaggerExamplesFromAssemblyOf<APIResponseNotFoundExample>();
-builder.Services.AddSwaggerExamplesFromAssemblyOf<APIResponseOkExample>();
-builder.Services.AddSwaggerExamplesFromAssemblyOf<APIResponseInternalServerErrorExample>();
+builder.Services.AddSwaggerExamples();
 
 var app = builder.Build();
 
@@ -51,6 +31,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+app.UseMiddleware<ValidationMiddleware>();
 app.MapControllers();
 
 app.Run();

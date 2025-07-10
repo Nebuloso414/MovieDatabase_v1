@@ -96,56 +96,41 @@ namespace MovieDatabase.Controllers
         [SwaggerResponseExample(StatusCodes.Status500InternalServerError, typeof(APIResponseInternalServerErrorExample))]
         public async Task<ActionResult<APIResponse>> CreateMovie([FromBody] MovieCreateDto request)
         {
-            try
+            if (await _movieService.MovieExistsAsync(request.Title))
             {
-                if (await _movieService.MovieExistsAsync(request.Title))
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.Errors.Add("Movie already exists.");
-                    return BadRequest(_response);
-                }
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.Errors.Add("Movie already exists.");
+                return BadRequest(_response);
+            }
 
-                if (request == null)
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.Errors.Add("Invalid movie data provided.");
-                    return BadRequest(_response);
-                }
+            if (request == null)
+            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.Errors.Add("Invalid movie data provided.");
+                return BadRequest(_response);
+            }
 
-                var genres = await _genreService.ProcessGenreNamesAsync(request.Genres);
+            var genres = await _genreService.ProcessGenreNamesAsync(request.Genres);
 
-                if (genres.NotFoundGenres.Count > 0)
-                {
-                    _response.StatusCode = HttpStatusCode.NotFound;
-                    _response.Errors = new List<string>
+            if (genres.NotFoundGenres.Count > 0)
+            {
+                _response.StatusCode = HttpStatusCode.NotFound;
+                _response.Errors = new List<string>
                     {
                         "The following genres do not exist: " + string.Join(", ", genres.NotFoundGenres)
                     };
-                    return BadRequest(_response);
-                }
-
-                var movie = _mapper.Map<Movie>(request);
-                movie.Genres = genres.FoundGenres;
-                await _movieService.CreateAsync(movie);
-
-                _response.IsSuccess = true;
-                _response.Result = _mapper.Map<MovieDto>(movie);
-                _response.StatusCode = HttpStatusCode.Created;
-
-                return CreatedAtRoute("GetMovie", new { id = movie.Id }, _response);
-            }
-            catch (BadHttpRequestException ex)
-            {
-                _response.StatusCode = HttpStatusCode.BadRequest;
-                _response.Errors.Add(ex.Message);
                 return BadRequest(_response);
             }
-            catch (Exception ex)
-            {
-                _response.StatusCode = HttpStatusCode.InternalServerError;
-                _response.Errors.Add(ex.Message);
-                return StatusCode((int)_response.StatusCode, _response);
-            }
+
+            var movie = _mapper.Map<Movie>(request);
+            movie.Genres = genres.FoundGenres;
+            await _movieService.CreateAsync(movie);
+
+            _response.IsSuccess = true;
+            _response.Result = _mapper.Map<MovieDto>(movie);
+            _response.StatusCode = HttpStatusCode.Created;
+
+            return CreatedAtRoute("GetMovie", new { id = movie.Id }, _response);
         }
 
         [HttpDelete("{id:int}")]

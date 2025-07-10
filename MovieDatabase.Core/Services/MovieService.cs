@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using MovieDatabase.Core.Models;
 using MovieDatabase.Core.Models.Dto;
 using MovieDatabase.Core.Repository.IRepository;
@@ -10,12 +11,12 @@ namespace MovieDatabase.Core.Services
     public class MovieService : IMovieService
     {
         private readonly IMovieRepository _movieRepository;
-        private readonly IGenreRepository _genreRepository;
+        private readonly IValidator<Movie> _movieValidator;
 
-        public MovieService(IMovieRepository movieRepository, IGenreRepository genreRepository)
+        public MovieService(IMovieRepository movieRepository, IValidator<Movie> movieValidator)
         {
             _movieRepository = movieRepository;
-            _genreRepository = genreRepository;
+            _movieValidator = movieValidator;
         }
 
         public async Task<IEnumerable<MovieDto>> GetMoviesAsync(Expression<Func<Movie, bool>>? filter = null, bool includeCast = false)
@@ -25,6 +26,7 @@ namespace MovieDatabase.Core.Services
 
         public async Task<bool> CreateAsync(Movie movie)
         {
+            await _movieValidator.ValidateAndThrowAsync(movie);
             return await _movieRepository.CreateAsync(movie);
         }
 
