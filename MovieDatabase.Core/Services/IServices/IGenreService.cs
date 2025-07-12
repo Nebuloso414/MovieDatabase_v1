@@ -10,6 +10,6 @@ namespace MovieDatabase.Core.Services
         Task<Genre> CreateAsync(Genre newGenre);
         Task DeleteAsync(Genre genre);
         Task<Genre> UpdateAsync(Genre updatedGenre);
-        Task<(List<Genre> FoundGenres, List<string> NotFoundGenres)> ProcessGenreNamesAsync(List<string> genreNames);
+        Task<List<Genre>?> GetGenresByNamesAsync(List<string> genreNames);
     }
 }

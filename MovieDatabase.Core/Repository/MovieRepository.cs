@@ -60,9 +60,14 @@ namespace MovieDatabase.Core.Repository
             }
         }
 
-        public async Task<bool> MovieExistsAsync(string title)
+        public async Task<bool> MovieExistsAsync(int id)
         {
-            return await _dbSet.AnyAsync(m => m.Title.ToLower() == title.ToLower());
+            return await _dbSet.AnyAsync(m => m.Id == id);
+        }
+
+        public async Task<Movie?> GetByTitleAndReleaseDate(string title, DateOnly releaseDate)
+        {
+            return await _dbSet.FirstOrDefaultAsync(m => m.Title.ToLower() == title.ToLower() && m.ReleaseDate == releaseDate);
         }
     }
 }

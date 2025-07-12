@@ -4,6 +4,6 @@ namespace MovieDatabase.Core.Repository.IRepository
 {
     public interface IGenreRepository : IBaseRepository<Genre>
     {
-        Task<List<Genre>> GetGenresByNamesAsync(IEnumerable<string> genreNames);
+        Task<List<Genre>?> GetGenresByNamesAsync(IEnumerable<string> genreNames);
     }
 }

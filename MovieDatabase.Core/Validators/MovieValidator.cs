@@ -30,9 +30,9 @@ namespace MovieDatabase.Core.Validators
 
         private async Task<bool> ValidateMovieExistence(Movie movie, string title, CancellationToken token)
         {
-            var existingMovie = await _movieRepository.GetByIdAsync(m => m.Title == title, false);
+            var existingMovie = await _movieRepository.GetByTitleAndReleaseDate(movie.Title, movie.ReleaseDate);
             
-            return existingMovie == null || existingMovie.ReleaseDate != movie.ReleaseDate;
+            return existingMovie == null || existingMovie.Id == movie.Id;
         }
     }
 }

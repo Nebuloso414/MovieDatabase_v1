@@ -9,10 +9,10 @@ namespace MovieDatabase.Core.Repository
     {
         public GenreRepository(ApplicationDbContext context) : base(context) { }
 
-        public async Task<List<Genre>> GetGenresByNamesAsync(IEnumerable<string> genreNames)
+        public async Task<List<Genre>?> GetGenresByNamesAsync(IEnumerable<string> genreNames)
         {
             if (genreNames == null || !genreNames.Any())
-                return new List<Genre>();
+                return null;
 
             var normalizedNames = genreNames.Select(g => g.ToLower());
 

@@ -8,9 +8,8 @@ namespace MovieDatabase.Core.Services
     {
         Task<IEnumerable<MovieDto>> GetAllAsync (Expression<Func<Movie, bool>>? filter = null, bool includeCast = false);
         Task<MovieDto?> GetByIdAsync(int id, bool includeCast = false);
-        Task<bool> CreateAsync(Movie movie);
-        Task<bool> DeleteAsync(Movie movie);
-        Task<Movie> UpdateAsync(Movie movie);
-        Task<bool> MovieExistsAsync(string title);
+        Task<MovieDto> CreateAsync(MovieCreateDto movie);
+        Task<bool> DeleteAsync(int id);
+        Task<MovieDto?> UpdateAsync(MovieUpdateDto movie);
     }
 }

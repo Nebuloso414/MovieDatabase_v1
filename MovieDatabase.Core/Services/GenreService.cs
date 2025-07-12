@@ -40,24 +40,13 @@ namespace MovieDatabase.Core.Services
             return updatedGenre;
         }
 
-        public async Task<(List<Genre> FoundGenres, List<string> NotFoundGenres)> ProcessGenreNamesAsync(List<string> genreNames)
+        public async Task<List<Genre>?> GetGenresByNamesAsync(List<string> genreNames)
         {
             if (genreNames == null || !genreNames.Any())
             {
-                return (new List<Genre>(), new List<string>());
+                return null;
             }
-
-            // Get genres from the repository
-            var foundGenres = await _genreRepository.GetGenresByNamesAsync(genreNames);
-            
-            // Find genre names that were not found in the database
-            var foundGenreNames = foundGenres.Select(g => g.Name).ToList();
-            var notFoundGenres = genreNames
-                .Where(name => !foundGenreNames.Any(foundName => 
-                    foundName.Equals(name, StringComparison.OrdinalIgnoreCase)))
-                .ToList();
-            
-            return (foundGenres, notFoundGenres);
+            return await _genreRepository.GetGenresByNamesAsync(genreNames);
         }
     }
 }

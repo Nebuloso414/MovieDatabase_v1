@@ -8,6 +8,7 @@ namespace MovieDatabase.Core.Repository.IRepository
     {
         Task<Movie?> GetByTitleAsync(string title);
         Task<IEnumerable<MovieDto>> GetMoviesAsync(Expression<Func<Movie, bool>>? filter = null, bool includeCast = false);
-        Task<bool> MovieExistsAsync(string title);
+        Task<bool> MovieExistsAsync(int id);
+        Task<Movie?> GetByTitleAndReleaseDate(string title, DateOnly releaseDate);
     }
 }

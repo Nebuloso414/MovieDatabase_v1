@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Http;
+using MovieDatabase.Core.Mapping;
 using MovieDatabase.Core.Models;
 using MovieDatabase.Core.Models.Dto;
 using MovieDatabase.Core.Repository.IRepository;
@@ -12,11 +13,13 @@ namespace MovieDatabase.Core.Services
     {
         private readonly IMovieRepository _movieRepository;
         private readonly IValidator<Movie> _movieValidator;
+        private readonly IGenreService _genreService;
 
-        public MovieService(IMovieRepository movieRepository, IValidator<Movie> movieValidator)
+        public MovieService(IMovieRepository movieRepository, IValidator<Movie> movieValidator, IGenreService genreService)
         {
             _movieRepository = movieRepository;
             _movieValidator = movieValidator;
+            _genreService = genreService;
         }
 
         public async Task<IEnumerable<MovieDto>> GetAllAsync(Expression<Func<Movie, bool>>? filter = null, bool includeCast = false)
@@ -27,47 +30,51 @@ namespace MovieDatabase.Core.Services
         public async Task<MovieDto?> GetByIdAsync(int id, bool includeCast = false)
         {
             var movies = await _movieRepository.GetMoviesAsync(m => m.Id == id, includeCast);
-            return movies.FirstOrDefault();
+            return movies.SingleOrDefault();
         }
 
-        public async Task<bool> CreateAsync(Movie movie)
+        public async Task<MovieDto> CreateAsync(MovieCreateDto newMovie)
         {
+            var movie = newMovie.MapToMovie();
             await _movieValidator.ValidateAndThrowAsync(movie);
-            return await _movieRepository.CreateAsync(movie);
+
+            var genres = await _genreService.GetGenresByNamesAsync(newMovie.Genres);
+
+            if (genres != null)
+                movie.Genres = genres;
+
+            await _movieRepository.CreateAsync(movie);
+            return movie.MapToMovieResponse();
         }
 
-        public async Task<bool> DeleteAsync(Movie movie)
+        public async Task<bool> DeleteAsync(int id)
         {
+            var movie = await _movieRepository.GetByIdAsync(m => m.Id == id, tracked: true);
+
+            if (movie is null)
+                return false;
+
             return await _movieRepository.RemoveAsync(movie);
         }
 
-        public async Task<Movie> UpdateAsync(Movie movie)
+        public async Task<MovieDto?> UpdateAsync(MovieUpdateDto updatedMovie)
         {
-            var existingMovie = await _movieRepository.GetByIdAsync(m => m.Id == movie.Id, tracked: true, includeProperties: "Genres");
-            
-            if (existingMovie == null)
-            {
-                throw new BadHttpRequestException($"Movie with ID {movie.Id} not found.");
-            }
+            var existingMovie = await _movieRepository.GetByIdAsync(m => m.Id == updatedMovie.Id, tracked: true, includeProperties: "Genres");
 
-            existingMovie.Title = movie.Title;
-            existingMovie.ReleaseDate = movie.ReleaseDate;
-            existingMovie.Length = movie.Length;
-            existingMovie.Rating = movie.Rating;
-            
+            if (existingMovie is null)
+                return null;
+
+            existingMovie = updatedMovie.MapToMovie(existingMovie);
+            await _movieValidator.ValidateAndThrowAsync(existingMovie);
+
             existingMovie.Genres.Clear();
-            foreach (var genre in movie.Genres)
-            {
-                existingMovie.Genres.Add(genre);
-            }
-            
-            await _movieRepository.UpdateAsync(existingMovie);
-            return existingMovie;
-        }
+            var genres = await _genreService.GetGenresByNamesAsync(updatedMovie.Genres);
 
-        public async Task<bool> MovieExistsAsync(string title)
-        {
-            return await _movieRepository.MovieExistsAsync(title);
+            if (genres != null)
+                existingMovie.Genres = genres;
+
+            await _movieRepository.UpdateAsync(existingMovie);
+            return existingMovie.MapToMovieResponse();
         }
     }
 }
