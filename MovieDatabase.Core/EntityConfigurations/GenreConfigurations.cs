@@ -18,6 +18,10 @@ namespace MovieDatabase.Core.EntityConfigurations
                 .IsRequired()
                 .HasMaxLength(255);
 
+            modelBuilder
+                .Property(g => g.Description)
+                .HasMaxLength(255);
+
             modelBuilder.Property(r => r.CreatedDate)
                 .HasDefaultValueSql("GETDATE()");
 
