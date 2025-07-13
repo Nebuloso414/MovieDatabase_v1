@@ -55,7 +55,7 @@ namespace MovieDatabase.Controllers
         {
             try
             {
-                var person = await _peopleService.GetByIdAsync(p => p.Id == id, false);
+                var person = await _peopleService.GetByIdAsync(id, false);
                 if (person == null)
                 {
                     _response.StatusCode = HttpStatusCode.NotFound;
@@ -108,7 +108,7 @@ namespace MovieDatabase.Controllers
         {
             try
             {
-                var person = await _peopleService.GetByIdAsync(p => p.Id == id, false);
+                var person = await _peopleService.GetByIdAsync(id, false);
 
                 if (person == null)
                 {

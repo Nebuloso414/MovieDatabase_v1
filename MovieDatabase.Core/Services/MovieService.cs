@@ -49,7 +49,7 @@ namespace MovieDatabase.Core.Services
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var movie = await _movieRepository.GetByIdAsync(m => m.Id == id, tracked: true);
+            var movie = await _movieRepository.GetByIdAsync(id, tracked: true);
 
             if (movie is null)
                 return false;
@@ -59,7 +59,7 @@ namespace MovieDatabase.Core.Services
 
         public async Task<MovieDto?> UpdateAsync(MovieUpdateDto updatedMovie)
         {
-            var existingMovie = await _movieRepository.GetByIdAsync(m => m.Id == updatedMovie.Id, tracked: true, includeProperties: "Genres");
+            var existingMovie = await _movieRepository.GetByIdAsync(updatedMovie.Id, tracked: true, includeProperties: "Genres");
 
             if (existingMovie is null)
                 return null;

@@ -7,7 +7,7 @@ namespace MovieDatabase.Core.Services
     public interface IPeopleService
     {
         Task<IEnumerable<People>> GetAllAsync(Expression<Func<People, bool>>? filter = null, string? includeProperties = null);
-        Task<People?> GetByIdAsync(Expression<Func<People, bool>>? filter = null, bool tracked = true, string? includeProperties = null);
+        Task<People?> GetByIdAsync(int id, bool tracked = true, string? includeProperties = null);
         Task<IEnumerable<People?>> GetByNameAsync(string name);
         Task<People> CreateAsync(PeopleCreateDto peopleDto);
         Task DeleteAsync(People people);

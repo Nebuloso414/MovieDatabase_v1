@@ -20,5 +20,15 @@ namespace MovieDatabase.Core.Repository
                 .Where(g => normalizedNames.Contains(g.Name.ToLower()))
                 .ToListAsync();
         }
+
+        public async Task<Genre?> GetByNameAsync(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return null;
+
+            return await _dbSet
+                .AsNoTracking()
+                .FirstOrDefaultAsync(g => g.Name.ToLower() == name.ToLower());
+        }
     }
 }

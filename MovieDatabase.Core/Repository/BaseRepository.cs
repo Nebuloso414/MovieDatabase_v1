@@ -36,7 +36,7 @@ namespace MovieDatabase.Core.Repository
             return await query.ToListAsync();
         }
 
-        public virtual async Task<T?> GetByIdAsync(Expression<Func<T, bool>>? filter = null, bool tracked = true, string? includeProperties = null)
+        public virtual async Task<T?> GetByIdAsync(int id, bool tracked = true, string? includeProperties = null)
         {
             IQueryable<T> query = _dbSet;
 
@@ -45,10 +45,7 @@ namespace MovieDatabase.Core.Repository
                 query = query.AsNoTracking();
             }
 
-            if (filter != null)
-            {
-                query = query.Where(filter);
-            }
+            query = query.Where(e => EF.Property<int>(e, "Id") == id);
 
             if (!string.IsNullOrEmpty(includeProperties))
             {

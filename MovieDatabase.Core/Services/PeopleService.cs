@@ -23,9 +23,9 @@ namespace MovieDatabase.Core.Services
             return await _peopleRepository.GetAllAsync(filter, includeProperties);
         }
 
-        public async Task<People?> GetByIdAsync(Expression<Func<People, bool>>? filter = null, bool tracked = true, string? includeProperties = null)
+        public async Task<People?> GetByIdAsync(int id, bool tracked = true, string? includeProperties = null)
         {
-            return await _peopleRepository.GetByIdAsync(filter, tracked, includeProperties);
+            return await _peopleRepository.GetByIdAsync(id, tracked, includeProperties);
         }
 
         public async Task<IEnumerable<People?>> GetByNameAsync(string name)
@@ -51,7 +51,7 @@ namespace MovieDatabase.Core.Services
 
         public async Task<People> UpdateAsync(PeopleUpdateDto updatedPeople)
         {
-            var existingPerson = await _peopleRepository.GetByIdAsync(p => p.Id == updatedPeople.Id, true);
+            var existingPerson = await _peopleRepository.GetByIdAsync(updatedPeople.Id, true);
 
             if (existingPerson == null)
             {
