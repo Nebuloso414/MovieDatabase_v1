@@ -2,6 +2,7 @@
 using MovieDatabase.Core.Models;
 using MovieDatabase.Core.Models.Dto;
 using MovieDatabase.Core.Services;
+using Swashbuckle.AspNetCore.Filters;
 using System.Net;
 
 namespace MovieDatabase.Controllers
@@ -22,6 +23,7 @@ namespace MovieDatabase.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status200OK)]
         public async Task<ActionResult<APIResponse>> GetAll([FromQuery] string? name = null)
         {
             IEnumerable<PeopleDto> response;
@@ -40,6 +42,8 @@ namespace MovieDatabase.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<APIResponse>> GetById(int id)
         {
             var response = await _peopleService.GetByIdAsync(id, tracked: false);
@@ -57,6 +61,10 @@ namespace MovieDatabase.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status400BadRequest)]
+        [SwaggerResponseExample(StatusCodes.Status200OK, typeof(APIResponseOkExample))]
+        [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(APIResponseBadRequestExample))]
         public async Task<ActionResult<APIResponse>> Create([FromBody] PeopleCreateDto peopleDto)
         {
             var response = await _peopleService.CreateAsync(peopleDto);
@@ -69,6 +77,10 @@ namespace MovieDatabase.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status404NotFound)]
+        [SwaggerResponseExample(StatusCodes.Status200OK, typeof(APIResponseOkExample))]
+        [SwaggerResponseExample(StatusCodes.Status404NotFound, typeof(APIResponseNotFoundExample))]
         public async Task<ActionResult<APIResponse>> Delete(int id)
         {
             var deleted = await _peopleService.DeleteAsync(id);
@@ -86,6 +98,10 @@ namespace MovieDatabase.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(APIResponse), StatusCodes.Status400BadRequest)]
+        [SwaggerResponseExample(StatusCodes.Status200OK, typeof(APIResponseOkExample))]
+        [SwaggerResponseExample(StatusCodes.Status400BadRequest, typeof(APIResponseBadRequestExample))]
         public async Task<ActionResult<APIResponse>> Update(int id, [FromBody] PeopleUpdateDto request)
         {
             request.SetId(id);
