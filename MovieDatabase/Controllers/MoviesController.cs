@@ -41,13 +41,6 @@ namespace MovieDatabase.Controllers
         [ProducesResponseType(typeof(APIResponse), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<APIResponse>> GetMovie(int id, [FromQuery] bool includeCast = false)
         {
-                if (id <= 0)
-                {
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    _response.Errors.Add("Invalid ID provided.");
-                    return BadRequest(_response);
-                }
-
                 var movie = await _movieService.GetByIdAsync(id, includeCast);
 
                 if (movie is null)
